@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chess Rankings (Elo Updated)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <style>
+        body { background: #1e2330; color: #f9f6e0; font-family: 'Roboto', Arial, sans-serif; margin:0;}
+        nav { text-align: center; padding: 22px 0 14px 0; background: #3b2f7f;}
+        nav a { color: #feda5a; margin: 0 22px; text-decoration: none; font-family:'Montserrat',Arial,sans-serif; font-weight: bold; font-size: 1.13em;}
+        nav a:hover { color: #39a7ff;}
+        .container {max-width: 700px; margin: 44px auto;}
+        h1 { color: #39a7ff; text-align: center; font-family:'Montserrat',Arial,sans-serif;}
+        table { margin: 36px auto; width: 92%; background: #212949; border-radius:12px; border-collapse:collapse;}
+        th, td { padding: 15px 10px; text-align: center; color: #feda5a; border-bottom:1px solid #3e4380;}
+        th { font-size: 1.14em; letter-spacing:.4px;}
+        tr:nth-child(even) {background: #2e3965cc;}
+        td { color: #fff; font-size:1.09em;}
+        .desc {color: #ffe082;text-align:center;padding:9px 0;font-size:1.09em;}
+    </style>
+    <script>
+        let players = ["Hardik", "Zamam", "Adavya", "Earth", "Aarav Pastor", "Arjun", "Arnav", "Vyan", "Aaryav", "Himank", "Avyukt"];
+        let ratings = {};
+
+        // Load Elo ratings from localStorage or default to 1500
+        function loadRatings() {
+            const saved = localStorage.getItem("eloRatings");
+            if (saved) {
+                ratings = JSON.parse(saved);
+            } else {
+                players.forEach(p => ratings[p] = 1500);
+            }
+        }
+
+        // Sort players descending by rating
+        function sortByRating() {
+            return players.slice().sort((a,b) => (ratings[b] || 1500) - (ratings[a] || 1500));
+        }
+
+        // Build rankings table
+        function showRankings() {
+            const tbody = document.getElementById("rankBody");
+            tbody.innerHTML = "";
+            const sorted = sortByRating();
+            sorted.forEach((player, idx) => {
+                const rating = ratings[player] || 1500;
+                tbody.innerHTML += `<tr><td>${idx + 1}</td><td>${player}</td><td>${rating}</td></tr>`;
+            });
+        }
+
+        window.onload = function() {
+            loadRatings();
+            showRankings();
+        }
+    </script>
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="players.html">Players</a>
+        <a href="matches.html">Match Records</a>
+        <a href="rankings.html">Rankings</a>
+        <a href="tips.html">Tips & Principles</a>
+        <a href="stats.html">Player Stats</a>
+        <a href="comingsoon.html">Coming Soon</a>
+    </nav>
+    <div class="container">
+        <h1>Chess Rankings (Elo Ratings)</h1>
+        <div class="desc">Player rankings calculated using the Elo system. Updated with match results by Admin.</div>
+        <table>
+            <thead>
+                <tr><th>Rank</th><th>Player</th><th>Points</th></tr>
+            </thead>
+            <tbody id="rankBody"></tbody>
+        </table>
+    </div>
+</body>
+</html>

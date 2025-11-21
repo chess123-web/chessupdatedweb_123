@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chess Match Records & Elo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <style>
+        body { background: #1e2330; color: #fafafa; font-family: 'Roboto', Arial, sans-serif; margin: 0;}
+        nav { text-align: center; padding: 22px 0 14px 0; background: #3b2f7f;}
+        nav a { color: #feda5a; margin: 0 22px; text-decoration: none; font-family:'Montserrat',Arial,sans-serif; font-weight: bold; font-size: 1.13em;}
+        nav a:hover { color: #39a7ff;}
+        .container { max-width: 700px; margin: 40px auto;}
+        h1 { color: #feda5a; text-align: center; font-family:'Montserrat',Arial,sans-serif;}
+        form { background: #23274acc; padding:28px 28px 20px 28px; border-radius:17px;margin-bottom:22px;}
+        input, select { padding:8px; margin:0 0 13px; width: 98%; border:none; border-radius: 6px;}
+        label { font-weight: bold; color: #ffe35e;}
+        .submit-btn { background: #39a7ff; color:#fff; padding:11px 0; border:none; border-radius:6px; width:100%; font-size:1.1em;}
+        .submit-btn:hover {background:#feda5a;color:#22204a;}
+        table { margin-top:12px; width:100%; border-collapse:collapse; background:#22314a; border-radius:10px;}
+        th, td { border:1px solid #31375b; padding:10px; text-align:center; font-size:1em;}
+        th { color:#ffe35e;  }
+        tr:nth-child(even) { background:#243250dd;}
+        .admin-bar {background:#23274acc;padding:18px 24px;border-radius:14px;margin-bottom:24px;}
+        .admin-bar input[type=password] {width: 170px; padding:7px; margin-right:7px; border-radius:5px;}
+        .admin-bar button {padding: 8px 18px; border:none; border-radius:7px; background: #39a7ff; color:#fff; font-weight: bold; cursor:pointer;}
+        .admin-bar button:hover {background: #feda5a; color:#26304d;}
+        .not-admin {text-align:center;margin-top:9px;margin-bottom:14px;color:#feda5a;font-size:1.06em;}
+    </style>
+    <script>
+        const adminPassword = "adminchess";
+
+        const players = ["Hardik", "Zamam", "Adavya", "Earth", "Aarav Pastor", "Arjun", "Arnav", "Vyan", "Aaryav", "Himank", "Avyukt"];
+        let ratings = {};
+        let matches = [];
+
+        // Initialize ratings to 1500
+        players.forEach(p => ratings[p] = 1500);
+
+        // Load saved data from localStorage if available
+        function loadData() {
+            let savedRatings = localStorage.getItem('eloRatings');
+            if(savedRatings) {
+                ratings = JSON.parse(savedRatings);
+            }
+            let savedMatches = localStorage.getItem('matches');
+            if(savedMatches) {
+                matches = JSON.parse(savedMatches);
+                refreshTable();
+            }
+        }
+
+        function unlockForm() {
+            const attempt = document.getElementById('adminpass').value;
+            if(attempt === adminPassword) {
+                document.getElementById('matchForm').style.display = '';
+                document.getElementById('admin-login').style.display = 'none';
+            } else {
+                alert("Incorrect Admin Password.");
+            }
+            return false;
+        }
+
+        // Elo rating update
+        function updateElo(winner, loser) {
+            const K = 30;
+            let ratingWinner = ratings[winner];
+            let ratingLoser = ratings[loser];
+
+            const expectedWinner = 1 / (1 + Math.pow(10, (ratingLoser - ratingWinner) / 400));
+            const expectedLoser = 1 / (1 + Math.pow(10, (ratingWinner - ratingLoser) / 400));
+
+            ratings[winner] = Math.round(ratingWinner + K * (1 - expectedWinner));
+            ratings[loser] = Math.round(ratingLoser + K * (0 - expectedLoser));
+        }
+
+        function addRecord() {
+            let p1 = document.getElementById('p1').value;
+            let p2 = document.getElementById('p2').value;
+            let result = document.getElementById('result').value.trim().toLowerCase();
+
+            if (p1 === p2) {
+                alert("Players must be different!");
+                return false;
+            }
+            if(!["1-0", "0-1", "draw", "drawn", "½-½"].includes(result)) {
+                alert('Result must be "1-0" (Player1 wins), "0-1" (Player2 wins), or "draw"/"½-½" (draw).');
+                return false;
+            }
+
+            // Update Elo ratings based on result
+            if(result === "1-0") updateElo(p1, p2);
+            else if(result === "0-1") updateElo(p2, p1);
+            // Draws do not update rating in this simple model
+
+            // Save match to list
+            matches.push({player1: p1, player2: p2, result: result});
+            saveData();
+            refreshTable();
+            document.getElementById('matchForm').reset();
+            return false;
+        }
+
+        // Display matches in the table
+        function refreshTable() {
+            const tbody = document.getElementById('records');
+            tbody.innerHTML = "";
+            matches.forEach(m => {
+                tbody.innerHTML += `<tr><td>${m.player1}</td><td>${m.player2}</td><td>${m.result}</td></tr>`;
+            });
+        }
+
+        // Save ratings and matches in localStorage
+        function saveData(){
+            localStorage.setItem("eloRatings", JSON.stringify(ratings));
+            localStorage.setItem("matches", JSON.stringify(matches));
+        }
+
+        window.onload = function(){
+            document.getElementById('matchForm').style.display = 'none';
+            loadData();
+        }
+    </script>
+</head>
+<body>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="players.html">Players</a>
+      <a href="matches.html">Match Records</a>
+      <a href="rankings.html">Rankings</a>
+      <a href="tips.html">Tips & Principles</a>
+      <a href="stats.html">Player Stats</a>
+      <a href="comingsoon.html">Coming Soon</a>
+    </nav>
+
+    <div class="container">
+        <h1>Chess Match Records & Elo Ratings</h1>
+        <div class="admin-bar" id="admin-login">
+            <div class="not-admin">Only Admin can add or modify match records.</div>
+            <form onsubmit="return unlockForm();">
+                <input type="password" id="adminpass" placeholder="Admin password" autocomplete="off">
+                <button type="submit">Login as Admin</button>
+            </form>
+        </div>
+
+        <form id="matchForm" onsubmit="return addRecord();">
+            <label>Player 1:</label><br>
+            <select id="p1" required>
+                <option>Hardik</option><option>Zamam</option><option>Adavya</option><option>Earth</option>
+                <option>Aarav Pastor</option><option>Arjun</option><option>Arnav</option><option>Vyan</option>
+                <option>Aaryav</option><option>Himank</option><option>Avyukt</option>
+            </select><br>
+
+            <label>Player 2:</label><br>
+            <select id="p2" required>
+                <option>Hardik</option><option>Zamam</option><option>Adavya</option><option>Earth</option>
+                <option>Aarav Pastor</option><option>Arjun</option><option>Arnav</option><option>Vyan</option>
+                <option>Aaryav</option><option>Himank</option><option>Avyukt</option>
+            </select><br>
+
+            <label>Result:</label><br>
+            <input type="text" id="result" placeholder="Result (1-0, 0-1, draw)" required><br>
+            <button class="submit-btn" type="submit">Add Record & Update Rankings</button>
+        </form>
+
+        <table>
+            <thead>
+                <tr><th>Player 1</th><th>Player 2</th><th>Result</th></tr>
+            </thead>
+            <tbody id="records"></tbody>
+        </table>
+    </div>
+</body>
+</html>

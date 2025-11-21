@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Player Stats</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <style>
+        body { background: #1e2330; color: #f9f6e0; font-family: 'Roboto', Arial, sans-serif; margin: 0;}
+        nav { text-align: center; padding: 22px 0 14px 0; background: #3b2f7f;}
+        nav a { color: #feda5a; margin: 0 18px; text-decoration: none; font-family:'Montserrat',Arial,sans-serif; font-weight: bold; font-size: 1.13em;}
+        nav a:hover { color: #39a7ff;}
+        .container { max-width: 800px; margin: 44px auto; }
+        h1 { color: #39a7ff; text-align: center; font-family:'Montserrat',Arial,sans-serif; margin-bottom: 28px;}
+        table { width: 100%; border-collapse: collapse; background: #212949; border-radius: 12px; overflow: hidden;}
+        th, td { padding: 12px 10px; border-bottom: 1px solid #3e4380; text-align: center; color: #feda5a; font-weight: 600;}
+        tr:nth-child(even) { background: #2e3965cc;}
+        td { color: #fff; }
+        .desc { color: #ffe082; text-align: center; padding-bottom: 22px; font-size: 1.08em; }
+    </style>
+    <script>
+        let players = ["Hardik", "Zamam", "Adavya", "Earth", "Aarav Pastor", "Arjun", "Arnav", "Vyan", "Aaryav", "Himank", "Avyukt"];
+
+        function loadMatches() {
+            let storedMatches = localStorage.getItem("matches");
+            if (storedMatches) {
+                return JSON.parse(storedMatches);
+            }
+            return [];
+        }
+
+        function calculateStats() {
+            let stats = {};
+            players.forEach(p => {
+                stats[p] = {wins: 0, losses: 0, draws: 0, games: 0};
+            });
+
+            let matches = loadMatches();
+
+            matches.forEach(match => {
+                let p1 = match.player1;
+                let p2 = match.player2;
+                let result = match.result.toLowerCase();
+
+                if(stats[p1]) stats[p1].games++;
+                if(stats[p2]) stats[p2].games++;
+
+                if(result === "1-0") {
+                    if(stats[p1]) stats[p1].wins++;
+                    if(stats[p2]) stats[p2].losses++;
+                } else if(result === "0-1") {
+                    if(stats[p2]) stats[p2].wins++;
+                    if(stats[p1]) stats[p1].losses++;
+                } else {
+                    if(stats[p1]) stats[p1].draws++;
+                    if(stats[p2]) stats[p2].draws++;
+                }
+            });
+
+            return stats;
+        }
+
+        function buildTable() {
+            const tbody = document.getElementById("statsBody");
+            tbody.innerHTML = "";
+            let stats = calculateStats();
+            players.forEach((p, i) => {
+                let s = stats[p];
+                tbody.innerHTML += `<tr>
+                    <td>${i+1}</td><td>${p}</td><td>${s.games}</td><td>${s.wins}</td><td>${s.losses}</td><td>${s.draws}</td>
+                </tr>`;
+            });
+        }
+
+        window.onload = function() {
+            buildTable();
+        }
+    </script>
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="players.html">Players</a>
+        <a href="matches.html">Match Records</a>
+        <a href="rankings.html">Rankings</a>
+        <a href="tips.html">Tips & Principles</a>
+        <a href="stats.html">Player Stats</a>
+        <a href="comingsoon.html">Coming Soon</a>
+    </nav>
+    <div class="container">
+        <h1>Player Statistics</h1>
+        <div class="desc">Overview of total games, wins, losses, and draws for each player (updated from match records).</div>
+        <table>
+            <thead>
+                <tr><th>Rank</th><th>Player</th><th>Games Played</th><th>Wins</th><th>Losses</th><th>Draws</th></tr>
+            </thead>
+            <tbody id="statsBody"></tbody>
+        </table>
+    </div>
+</body>
+</html>
